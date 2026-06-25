@@ -168,7 +168,7 @@
                 {
                     "name": "",
                     "id": "8c9122a8-723a-4351-8961-2a7f7c55ef97",
-                    "path": "<Gamepad>/start",
+                    "path": "<Gamepad>/button12",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
