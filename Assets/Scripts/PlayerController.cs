@@ -8,11 +8,13 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         Rigidbody = GetComponent<Rigidbody>();
+        ControllerInput = GetComponent<ControllerInput>();
     }
 
-    void Update()
-    {        
-        Rigidbody.linearVelocity = 
+    //FixedUpdateでフレームレート依存を回避
+    void FixedUpdate()
+    {
+        Rigidbody.linearVelocity =
         new Vector3(ControllerInput.Dpad.x, 0, ControllerInput.Dpad.y) * MoveSpeed;
     }
 }
