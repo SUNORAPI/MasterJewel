@@ -1,72 +1,98 @@
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using Unity.Collections;
-using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.UI;
 
+// 1つのマスの情報
 class GridStatus
 {
-    public int GridPosition_x;
-    public int GridPosition_y; 
-    public int[] PlayerExist;
-    private float[] PlayerCoordinate_x;
-    private float[] PlayerCoordinate_y;
+    // このマスに今いるプレイヤーの番号
+    public List<int> players = new List<int>();
+}
+
+// プレイヤー1人あたりの情報
+class Player
+{
+    public int id;
+    public Transform transform;
+    public PlayerStatus status;
 }
 
 public class GridSys : MonoBehaviour
 {
-    List<GridStatus> GridList=new List<GridStatus>();
-    int[] GridScale = {16,16};
-    private int PlayerIndex = 8;
-    int GridSize = 2;
-    int[] GridDistance_x;
-    int[] GridDistance_y;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    // Inspectorで設定
+    // Gridのスケールとは別物
+    //グリッドは左下起点でワールド座標のXZがグリッドのXYに対応する点に注意
+    [SerializeField] float originX = 0f;    // グリッドのワールド座標X
+    [SerializeField] float originZ = 0f;    // グリッドのワールド座標Z
+    [SerializeField] float cellSize = 2f;   // 1マスのサイズ
+    [SerializeField] int width = 16;    // 横のマス数
+    [SerializeField] int height = 16;   // 縦のマス数
+
+    public static GridSys Instance;
+
+    GridStatus[,] grid;
+    List<Player> players = new List<Player>();
+
+    // AwakeでInstanceを設定
+    void Awake()
     {
-        for(int i = 0; i < GridScale[0]; i++)
-        {
-            for(int j = 0; j < GridScale[1]; j++)
-            {
-                GridStatus Cell=new GridStatus();
-                Cell.GridPosition_x=i;
-                Cell.GridPosition_y=j;
-                for(int k = 0; k < PlayerIndex; k++)
-                {
-                    Cell.PlayerExist[k]=0;
-                }
-                GridList.Add(Cell);
-            }
-        }
-        for(int i = 0; i < GridScale[0]; i++)
-        {
-            GridDistance_x[i]=i*GridSize;
-        }
-        for(int i = 0; i < GridScale[1]; i++)
-        {
-            GridDistance_y[i]=i*GridSize;
-        }
-        
+        Instance = this;
     }
 
-    // Update is called once per frame
-    void Update()//プレイヤーの座標を取得してどのグリッドにいるか判定、リストに書き込む実装をする。
+    void Start()
     {
-       for(int i = 0; i < PlayerIndex ; i++)
-        {
-            for(int j = 0; j < GridScale[0]; j++)
-            {
-                for(int k = 0; k < GridScale[1]; k++)
-                    if(PlayerCoordinate_x[i] <= GridDistance_x[j+1]&&PlayerCoordinate_x > GridDistance_x[j]&&PlayerCoordinate_y[i] <= GridDistance_y[k+1]&&PlayerCoordinate_y[i] > GridDistance_y[k])
-                    {
-                        
-                    }
-                    else
-                    {
-                        
-                    }
-            } 
+        // セル作成
+        grid = new GridStatus[width, height];
+        for (int x = 0; x < width; x++){
+            for (int y = 0; y < height; y++){
+                grid[x, y] = new GridStatus();
+            }
         }
+    }
+
+    void Update()
+    {
+        // プレイヤーリストをリセット
+        for (int x = 0; x < width; x++){
+            for (int y = 0; y < height; y++){
+                grid[x, y].players.Clear();
+            }
+        }
+
+        // プレイヤーのマス目判定
+        foreach (Player p in players)
+        {
+            Vector3 pos = p.transform.position;
+
+            // ワールド座標をグリッドに変換
+            int cellX = Mathf.FloorToInt((pos.x - originX) / cellSize);
+            int cellY = Mathf.FloorToInt((pos.z - originZ) / cellSize);
+
+            // はみ出たときの対処
+            cellX = Mathf.Clamp(cellX, 0, width - 1);
+            cellY = Mathf.Clamp(cellY, 0, height - 1);
+
+            // プレイヤーにグリッド位置を記録
+            p.status.positionX = cellX;
+            p.status.positionY = cellY;
+
+            // グリッドにプレイヤーを記録
+            grid[cellX, cellY].players.Add(p.id);
+        }
+    }
+
+    // グリッドのプレイヤー登録
+    public void Register(int id, Transform transform, PlayerStatus status)
+    {
+        Player p = new Player();
+        p.id = id;
+        p.transform = transform;
+        p.status = status;
+        players.Add(p);
+    }
+
+    // プレイヤー登録解除
+    public void Unregister(int id)
+    {
+        players.RemoveAll(p => p.id == id);
     }
 }
