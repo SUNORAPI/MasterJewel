@@ -23,12 +23,20 @@ public class GridSys : MonoBehaviour
     //グリッドは左下起点でワールド座標のXZがグリッドのXYに対応する点に注意
     [SerializeField] float originX = 0f;    // グリッドのワールド座標X
     [SerializeField] float originZ = 0f;    // グリッドのワールド座標Z
-    [SerializeField] float cellSize = 2f;  // 1マスのサイズ
-    [SerializeField] int width = 16;       // 横のマス数
-    [SerializeField] int height = 16;      // 縦のマス数
+    [SerializeField] float cellSize = 2f;   // 1マスのサイズ
+    [SerializeField] int width = 16;    // 横のマス数
+    [SerializeField] int height = 16;   // 縦のマス数
+
+    public static GridSys Instance;
 
     GridStatus[,] grid;
     List<Player> players = new List<Player>();
+
+    // AwakeでInstanceを設定
+    void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {

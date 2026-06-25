@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 public class ControllerInput : MonoBehaviour
 {
     //Playerのプレハブにアタッチする。
-    private InputAction buttonA, buttonB, buttonX, buttonY, buttonL, buttonR, dpad;
+    private InputAction buttonA, buttonB, buttonX, buttonY, buttonL, buttonR, start, select, dpad;
 
     public bool ButtonA { get; private set; }
     public bool ButtonB { get; private set; }
@@ -13,6 +13,8 @@ public class ControllerInput : MonoBehaviour
     public bool ButtonY { get; private set; }
     public bool ButtonL { get; private set; }
     public bool ButtonR { get; private set; }
+    public bool Start  { get; private set; }
+    public bool Select { get; private set; }
     public Vector2 Dpad  { get; private set; }
 
     void Awake()
@@ -24,6 +26,8 @@ public class ControllerInput : MonoBehaviour
         buttonY = actions["ButtonY"];
         buttonL = actions["ButtonL"];
         buttonR = actions["ButtonR"];
+        start   = actions["Start"];
+        select  = actions["Select"];
         dpad    = actions["Dpad"];
     }
 
@@ -36,6 +40,8 @@ public class ControllerInput : MonoBehaviour
         ButtonY = buttonY.IsPressed();
         ButtonL = buttonL.IsPressed();
         ButtonR = buttonR.IsPressed();
+        Start   = start.IsPressed();
+        Select  = select.IsPressed();
         Dpad    = dpad.ReadValue<Vector2>();
     }
 }
