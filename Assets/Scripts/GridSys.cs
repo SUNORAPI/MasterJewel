@@ -47,6 +47,12 @@ public class GridSys : MonoBehaviour
                 grid[x, y] = new GridStatus();
             }
         }
+
+        // エントリー画面から持ち越した既存プレイヤーをまとめて登録する
+        foreach (var reg in FindObjectsByType<PlayerRegistrar>())
+        {
+            reg.RegisterToGrid();
+        }
     }
 
     void Update()
