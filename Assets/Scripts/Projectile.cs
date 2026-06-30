@@ -17,9 +17,16 @@ public class Projectile : MonoBehaviour
     public int ownerId;       // 撃った人の playerId（自分には当てない）
     public int ownerTeam;     // 撃った人のチーム（味方には当てない）
     public Vector3 direction; // 飛ぶ向き（正規化済みでなくてもよい）
-
+    Rigidbody rb;
+    Vector3 SpeedV; // 速度ベクトル
+    PlayerHPManager hp; // 被弾者のHP
     void Start()
     {
+        GetComponent<Rigidbody>();
+        SpeedV = direction.normalized * speed;
+        rb.linearVelocity = SpeedV;
+        Destroy(gameObject , range / speed);
+
         // TODO(コラボレーター): ガイドの「Startでやること」を実装
         // - Rigidbody を取得して direction * speed の速度を与える
         // - range / speed 秒後に自動で消す
@@ -27,6 +34,20 @@ public class Projectile : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        hp = GetComponent<PlayerHPManager>();
+        if(hp == null) return;
+        else if(hp.PlayerId == ownerId)return;
+        else if(hp.Team == ownerTeam)
+        {
+            Destroy(gameObject); 
+            return;
+        }
+        else
+        {
+            hp.TakeDamage(damage);
+            Destroy(gameObject);
+        }
+
         // TODO(コラボレーター): ガイドの「OnTriggerEnterでやること」を実装
         // - 当たった相手の PlayerHPManager を取得
         // - 自分(ownerId) / 味方(ownerTeam) / 敵 で処理を分岐
