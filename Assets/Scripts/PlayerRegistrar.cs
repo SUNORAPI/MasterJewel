@@ -7,6 +7,9 @@ public class PlayerRegistrar : MonoBehaviour
 
     bool registered; // GridSysへの二重登録防止フラグ
 
+    // PAC/PHPMが自分のplayerIdを参照するための公開プロパティ
+    public int PlayerId => playerId;
+
     // エントリー時にPlayerEntryManagerから呼ぶ
     public void SetPlayerId(int id) => playerId = id;
 
