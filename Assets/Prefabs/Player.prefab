@@ -17,6 +17,8 @@ GameObject:
   - component: {fileID: 8752420935106870237}
   - component: {fileID: 1554507211350156339}
   - component: {fileID: 6500351833627416901}
+  - component: {fileID: 41443271945625997}
+  - component: {fileID: -2135899147206752792}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -212,3 +214,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMoveControll
   MoveSpeed: 3
+--- !u!114 &41443271945625997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9174946259849904129}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff6eda790edcb804890e96309d17740d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAttackController
+  projectilePrefab: {fileID: 0}
+  r: 6
+  a: 10
+  v: 12
+  fireDelay: 0.5
+  spawnOffset: 1
+--- !u!114 &-2135899147206752792
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9174946259849904129}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 881d019bbbd424812a5e92d9f466048c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHPManager
+  respawnDelay: 2
+  respawnPoint: {fileID: 0}

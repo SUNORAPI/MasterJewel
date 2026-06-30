@@ -112,11 +112,33 @@
                 },
                 {
                     "name": "",
+                    "id": "03a3bde8-301d-4d33-acfa-d4f8788b67d4",
+                    "path": "<Joystick>/button2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Joystick",
+                    "action": "ButtonA",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "be1ec28d-66b4-4a41-b689-f28a07f844a3",
                     "path": "<Gamepad>/buttonSouth",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
+                    "action": "ButtonB",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e3385a40-230c-49b8-aaca-162d02cc1516",
+                    "path": "<Joystick>/trigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Joystick",
                     "action": "ButtonB",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -134,11 +156,33 @@
                 },
                 {
                     "name": "",
+                    "id": "c0968570-6191-4f7b-9635-db608c4dbf9c",
+                    "path": "<Joystick>/button4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Joystick",
+                    "action": "ButtonX",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "f672c071-224d-4438-a953-14b5545d70da",
                     "path": "<Gamepad>/buttonWest",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
+                    "action": "ButtonY",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6218fdc6-d02d-4a34-91de-a86a21c2ed09",
+                    "path": "<Joystick>/button3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Joystick",
                     "action": "ButtonY",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -156,11 +200,33 @@
                 },
                 {
                     "name": "",
+                    "id": "3d558950-1671-457a-a8c7-1b441c488cfa",
+                    "path": "<Joystick>/button5",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Joystick",
+                    "action": "ButtonL",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "bac23f1d-991b-4e96-b6a6-ac1d77723d97",
                     "path": "<Gamepad>/rightShoulder",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
+                    "action": "ButtonR",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "048f9481-3832-4d1d-b984-748c20816785",
+                    "path": "<Joystick>/button6",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Joystick",
                     "action": "ButtonR",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -178,11 +244,33 @@
                 },
                 {
                     "name": "",
+                    "id": "7effff88-887d-4ba5-be78-222c23885b8b",
+                    "path": "<Joystick>/button8",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Joystick",
+                    "action": "Start",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "acb11204-966b-4d47-95af-5586558c2eb8",
                     "path": "<Gamepad>/select",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
+                    "action": "Select",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2cb81406-1812-478f-8b17-6415c7d1297d",
+                    "path": "<Joystick>/button7",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Joystick",
                     "action": "Select",
                     "isComposite": false,
                     "isPartOfComposite": false
