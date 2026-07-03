@@ -17,6 +17,8 @@ GameObject:
   - component: {fileID: 8752420935106870237}
   - component: {fileID: 1554507211350156339}
   - component: {fileID: 6500351833627416901}
+  - component: {fileID: 41443271945625997}
+  - component: {fileID: -2135899147206752792}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -34,7 +36,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.5, y: 0.35, z: 0.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 3.2, y: 1, z: 3.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -116,7 +118,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0.15, z: 0}
 --- !u!114 &6766612403726456450
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -211,4 +213,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4275b43dd6db6482aa70d62621ef26c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMoveControll
-  MoveSpeed: 3
+  MoveSpeed: 2
+--- !u!114 &41443271945625997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9174946259849904129}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff6eda790edcb804890e96309d17740d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAttackController
+  projectilePrefab: {fileID: 9156210531469338398, guid: 97b386d028478824a9359ebee10800ca,
+    type: 3}
+  r: 6
+  a: 10
+  v: 12
+  fireDelay: 0.5
+  spawnOffset: 1
+--- !u!114 &-2135899147206752792
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9174946259849904129}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 881d019bbbd424812a5e92d9f466048c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHPManager
+  respawnDelay: 2
+  respawnPoint: {fileID: 0}
