@@ -30,14 +30,12 @@ public class PlayerAttackController : MonoBehaviour
 
     void Update()
     {
-        // 入力方向を覚えておく（停止中は最後の向きを保持）
         Vector2 dpad = input.Dpad;
         if (dpad.sqrMagnitude > 0.01f)
         {
             lastDir = new Vector3(dpad.x, 0f, dpad.y).normalized;
         }
 
-        // クールダウンを減衰
         if (cooldown > 0f)
         {
             cooldown -= Time.deltaTime;
