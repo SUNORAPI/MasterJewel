@@ -74,7 +74,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: cc2872014a6ed4b109995603d22b947f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -226,8 +226,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff6eda790edcb804890e96309d17740d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAttackController
-  projectilePrefab: {fileID: 9156210531469338398, guid: 97b386d028478824a9359ebee10800ca,
-    type: 3}
+  projectilePrefab: {fileID: 9156210531469338398, guid: 97b386d028478824a9359ebee10800ca, type: 3}
   r: 6
   a: 10
   v: 12

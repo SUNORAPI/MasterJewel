@@ -3,14 +3,12 @@ using UnityEngine;
 // 自身のPlayerStatusをGridSysに登録する
 public class PlayerRegistrar : MonoBehaviour
 {
-    [SerializeField] int playerId = -1; // エントリー時に決まる（-1なら未設定のまま）
+    [SerializeField] int playerId = -1;
 
-    bool registered; // GridSysへの二重登録防止フラグ
+    bool registered;
 
-    // PAC/PHPMが自分のplayerIdを参照するための公開プロパティ
     public int PlayerId => playerId;
 
-    // エントリー時にPlayerEntryManagerから呼ぶ
     public void SetPlayerId(int id) => playerId = id;
 
     void Start()
