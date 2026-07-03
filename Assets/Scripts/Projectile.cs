@@ -19,7 +19,7 @@ public class Projectile : MonoBehaviour
     public Vector3 direction; // 飛ぶ向き（正規化済みでなくてもよい）
     Rigidbody rb;
     Vector3 SpeedV; // 速度ベクトル
-    PlayerHPManager hp; // 被弾者のHP
+    PlayerHPManager hp; 
     void Start()
     {
         GetComponent<Rigidbody>();
