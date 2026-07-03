@@ -23,7 +23,7 @@ public class GridSys : MonoBehaviour
     //グリッドは左下起点でワールド座標のXZがグリッドのXYに対応する点に注意
     [SerializeField] float originX = 0f;    // グリッドのワールド座標X
     [SerializeField] float originZ = 0f;    // グリッドのワールド座標Z
-    [SerializeField] float cellSize = 2f;   // 1マスのサイズ
+    [SerializeField] float cellSize = 4f;   // 1マスのサイズ
     [SerializeField] int width = 16;    // 横のマス数
     [SerializeField] int height = 16;   // 縦のマス数
 
@@ -36,6 +36,28 @@ public class GridSys : MonoBehaviour
     void Awake()
     {
         Instance = this;
+        FitBoardToGrid();
+    }
+
+    // マス数・マスサイズの変更に合わせて板(このオブジェクトのメッシュ)のスケールを自動調整する
+    void OnValidate()
+    {
+        FitBoardToGrid();
+    }
+
+    void FitBoardToGrid()
+    {
+        var meshFilter = GetComponent<MeshFilter>();
+        Mesh mesh = meshFilter != null ? meshFilter.sharedMesh : null;
+        if (mesh == null) return;
+
+        Vector3 baseSize = mesh.bounds.size;
+        if (baseSize.x <= 0f || baseSize.z <= 0f) return;
+
+        Vector3 scale = transform.localScale;
+        scale.x = (width * cellSize) / baseSize.x;
+        scale.z = (height * cellSize) / baseSize.z;
+        transform.localScale = scale;
     }
 
     void Start()

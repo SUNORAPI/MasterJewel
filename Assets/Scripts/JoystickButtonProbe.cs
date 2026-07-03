@@ -10,7 +10,6 @@ using UnityEngine.InputSystem.Controls;
 //   3. 物理ボタンを1つずつ押すと、押されたコントロール名とバインドパスがConsoleに出る。
 //      例:「[押下] button2  →  バインドパス: <Joystick>/button2」
 //   4. その <Joystick>/buttonN を InputSystem_Actions の各アクションに割り当てる。
-//      （番号を伝えてもらえれば .inputactions をこちらで書き換えられます）
 //
 // 番号特定が終わったらこのスクリプト（GameObject）は外してOK。
 public class JoystickButtonProbe : MonoBehaviour

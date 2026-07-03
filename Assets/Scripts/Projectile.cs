@@ -22,7 +22,7 @@ public class Projectile : MonoBehaviour
     PlayerHPManager hp; // 被弾者のHP
     void Start()
     {
-        GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
         SpeedV = direction.normalized * speed;
         rb.linearVelocity = SpeedV;
         Destroy(gameObject , range / speed);
