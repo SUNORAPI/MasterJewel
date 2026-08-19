@@ -7,6 +7,10 @@
 #
 .utmp/
 CLAUDE.md
+
+# Local editor and operating-system settings
+.idea/
+.DS_Store
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/
