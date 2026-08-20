@@ -18,6 +18,7 @@ public class PlayerStatusManager : MonoBehaviour
     public List<PlayerStatus> playerStatuses = new List<PlayerStatus>();
 
     public int Count => playerStatuses.Count;
+    public bool TeamsConfirmed { get; private set; }
 
     // AwakeでInstanceを設定
     void Awake()
@@ -44,20 +45,19 @@ public class PlayerStatusManager : MonoBehaviour
         playerStatus.attackDeley = 0.0f;
         playerStatuses.Add(playerStatus);
 
-        // 参加順の前半=チーム0/後半=チーム1で割り当て直す（偶数人で均等になる）
-        AssignTeamsByHalf();
-
         return playerStatuses.Count - 1;
     }
 
-    // チーム振り分け
-    public void AssignTeamsByHalf()
+    // エントリー確定時にだけチームを振り分ける。
+    public void ConfirmTeamsByHalf()
     {
-        var half = playerStatuses.Count / 2;
+        var half = (playerStatuses.Count + 1) / 2;
         for (int i = 0; i < playerStatuses.Count; i++)
         {
             playerStatuses[i].teamNumber = (i < half) ? 0 : 1;
         }
+
+        TeamsConfirmed = true;
     }
 
     // playerIdに対応するステータスを返す関数
