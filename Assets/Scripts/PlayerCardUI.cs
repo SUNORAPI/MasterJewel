@@ -1,17 +1,13 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class PlayerCardUI : MonoBehaviour
 {
-    // LRのHPバー方向
-    [SerializeField] bool anchorHpFromRight = false;
-
     TMP_Text numberText;
     TMP_Text pointsText;
     TMP_Text hpText;
-    RectTransform hpGreenRect;
-    float hpGreenFullWidth;
-    float hpGreenFixedEdgeX;
+    Image hpGaugeImage;
     int playerId = -1;
 
     void Awake()
@@ -19,12 +15,11 @@ public class PlayerCardUI : MonoBehaviour
         numberText = transform.Find("Number").GetComponent<TMP_Text>();
         pointsText = transform.Find("Points").GetComponent<TMP_Text>();
         hpText = transform.Find("HP").GetComponent<TMP_Text>();
-        hpGreenRect = transform.Find("HP_Green").GetComponent<RectTransform>();
-        hpGreenFullWidth = hpGreenRect.sizeDelta.x;
-        float halfWidth = hpGreenFullWidth / 2f;
-        hpGreenFixedEdgeX = anchorHpFromRight
-            ? hpGreenRect.anchoredPosition.x + halfWidth
-            : hpGreenRect.anchoredPosition.x - halfWidth;
+        hpGaugeImage = transform.Find("HPGauge").GetComponent<Image>();
+        hpGaugeImage.type = Image.Type.Filled;
+        hpGaugeImage.fillMethod = Image.FillMethod.Vertical;
+        hpGaugeImage.fillOrigin = (int)Image.OriginVertical.Bottom;
+        hpGaugeImage.fillAmount = 1f;
 
         gameObject.SetActive(false);
     }
@@ -49,11 +44,6 @@ public class PlayerCardUI : MonoBehaviour
         pointsText.text = $"{status.Crystals}P";
         int hp = Mathf.Clamp(status.health, 0, 100);
         hpText.text = $"{hp}%";
-        float width = hpGreenFullWidth * (hp / 100f);
-        float halfWidth = width / 2f;
-        float centerX = anchorHpFromRight ? hpGreenFixedEdgeX - halfWidth : hpGreenFixedEdgeX + halfWidth;
-
-        hpGreenRect.sizeDelta = new Vector2(width, hpGreenRect.sizeDelta.y);
-        hpGreenRect.anchoredPosition = new Vector2(centerX, hpGreenRect.anchoredPosition.y);
+        hpGaugeImage.fillAmount = hp / 100f;
     }
 }
