@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 330000}
   - component: {fileID: 230000}
   - component: {fileID: 650000}
+  - component: {fileID: 114000}
   m_Layer: 0
   m_Name: PlayerEntryStage
   m_TagString: Untagged
@@ -19,6 +20,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &114000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d14bb867a0c34b81a3d66c970f8964c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerEntryStageLabel
+  backgroundSprite: {fileID: 21300000, guid: 4a6bcd7a6e7054a17929a7e1a20936df, type: 3}
+  fontAsset: {fileID: 11400000, guid: a460a4a18d7ed4e249e641a76fa7ecc1, type: 2}
+  textColor: {r: 0.23, g: 0.12, b: 0.02, a: 1}
 --- !u!4 &400000
 Transform:
   m_ObjectHideFlags: 0
@@ -67,7 +83,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: cc2872014a6ed4b109995603d22b947f, type: 2}
+  - {fileID: 2100000, guid: adcaa47d74cb146bd8e58aa51ee60428, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

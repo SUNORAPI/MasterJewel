@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(PlayerInputManager))]
 public class PlayerEntryManager : MonoBehaviour
 {
-    [Header("Stage")]
+    [Header("Stage Prefab")]
     [SerializeField] GameObject stagePrefab;
     [SerializeField, Range(1, 8)] int maxPlayers = 8;
 
@@ -22,12 +22,19 @@ public class PlayerEntryManager : MonoBehaviour
     [SerializeField, Min(0f)] float joinRiseDistance = 4f;
     [SerializeField] AnimationCurve layoutEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    [Header("Stage Colors")]
+    [SerializeField] Color pendingStageColor = new Color(1f, 0.7843137f, 0f, 1f); // #FFC800
+    [SerializeField] Material leftTeamStageMaterial;
+    [SerializeField] Material rightTeamStageMaterial;
+
     const float SpawnClearance = 0.05f;
 
     sealed class Entry
     {
         public PlayerInput player;
         public Transform stage;
+        public Renderer[] stageRenderers;
+        public Material[] stageMaterials;
     }
 
     sealed class RigidGroup
@@ -39,6 +46,8 @@ public class PlayerEntryManager : MonoBehaviour
         public Vector3[] localOffsets;
         public Quaternion[] startRotations;
         public Vector3[] startScales;
+        public Material targetMaterial;
+        public Color targetColor;
     }
 
     struct LayoutPose
@@ -58,6 +67,7 @@ public class PlayerEntryManager : MonoBehaviour
 
     PlayerInputManager manager;
     Coroutine layoutCoroutine;
+    // 正面補正はアバター側で行うため、待機中の親回転は加えない。
     Quaternion waitingRotation = Quaternion.identity;
 
     public bool TeamsConfirmed { get; private set; }
@@ -67,7 +77,11 @@ public class PlayerEntryManager : MonoBehaviour
     {
         manager = GetComponent<PlayerInputManager>();
         if (stagePrefab == null)
-            stagePrefab = Resources.Load<GameObject>("PlayerEntryStage");
+        {
+            Debug.LogError(
+                "PlayerEntryManager: stagePrefabが未設定です。PlayerEntryStage PrefabをInspectorで指定してください",
+                this);
+        }
     }
 
     void OnEnable()
@@ -81,6 +95,11 @@ public class PlayerEntryManager : MonoBehaviour
         if (manager == null) return;
         manager.onPlayerJoined -= OnPlayerJoined;
         manager.onPlayerLeft -= OnPlayerLeft;
+    }
+
+    void OnDestroy()
+    {
+        foreach (var entry in entries) ReleaseStageMaterials(entry);
     }
 
     void OnPlayerJoined(PlayerInput input)
@@ -99,7 +118,7 @@ public class PlayerEntryManager : MonoBehaviour
         DontDestroyOnLoad(input.gameObject);
         SetPresentationFrozen(input, true);
 
-        var stage = CreateStage();
+        var stage = CreateStage(id + 1);
         if (stage == null)
         {
             Debug.LogWarning("PlayerEntryManager: 配置エラー");
@@ -110,7 +129,15 @@ public class PlayerEntryManager : MonoBehaviour
         stage.gameObject.SetActive(true);
         stage.localScale = Vector3.zero;
 
-        entries.Add(new Entry { player = input, stage = stage });
+        var entry = new Entry
+        {
+            player = input,
+            stage = stage,
+            stageRenderers = stage.GetComponentsInChildren<Renderer>(true)
+        };
+        InitializeStageMaterials(entry);
+        SetStageColor(entry, pendingStageColor);
+        entries.Add(entry);
         StartWaitingLayout(stage);
 
         var deviceName = input.devices.Count > 0 ? input.devices[0].displayName : "(no device)";
@@ -119,16 +146,31 @@ public class PlayerEntryManager : MonoBehaviour
 
     void OnPlayerLeft(PlayerInput input)
     {
+        StopLayoutAnimation();
+
         var index = entries.FindIndex(entry => entry.player == input);
         if (index >= 0)
         {
-            var stage = entries[index].stage;
+            var entry = entries[index];
+            ReleaseStageMaterials(entry);
+            var stage = entry.stage;
             if (stage != null) Destroy(stage.gameObject);
             entries.RemoveAt(index);
         }
 
         if (!TeamsConfirmed) StartWaitingLayout();
         Debug.Log($"Player left: playerIndex={input.playerIndex}");
+    }
+
+    void StopLayoutAnimation()
+    {
+        if (layoutCoroutine != null)
+        {
+            StopCoroutine(layoutCoroutine);
+            layoutCoroutine = null;
+        }
+
+        IsAnimating = false;
     }
 
     public bool ConfirmTeams()
@@ -157,12 +199,19 @@ public class PlayerEntryManager : MonoBehaviour
         }
     }
 
-    Transform CreateStage()
+    Transform CreateStage(int playerNumber)
     {
-        if (stagePrefab == null) return null;
+        if (stagePrefab == null)
+        {
+            Debug.LogError("PlayerEntryManager: Prefabからステージを生成できません", this);
+            return null;
+        }
 
-        var instance = Instantiate(stagePrefab);
+        // エントリー用ステージは、Sceneに設定されたPrefabからのみ生成する。
+        var instance = Instantiate(stagePrefab, transform, false);
         instance.name = $"PlayerEntryStage P{entries.Count + 1}";
+        var stageLabel = instance.GetComponent<PlayerEntryStageLabel>();
+        if (stageLabel != null) stageLabel.SetPlayerNumber(playerNumber);
         var stage = instance.transform;
         stageScales[stage] = stage.localScale;
         return stage;
@@ -229,6 +278,10 @@ public class PlayerEntryManager : MonoBehaviour
         group.targetCenter = confirmedCenter
             + Vector3.right * (isLeft ? -teamCenterOffset : teamCenterOffset);
         group.targetRotation = Quaternion.Euler(0f, isLeft ? -teamAngle : teamAngle, 0f);
+        group.targetMaterial = isLeft ? leftTeamStageMaterial : rightTeamStageMaterial;
+        group.targetColor = group.targetMaterial != null
+            ? group.targetMaterial.color
+            : (isLeft ? Color.blue : Color.red);
 
         group.localOffsets = new Vector3[entryIndices.Count];
         group.startRotations = new Quaternion[entryIndices.Count];
@@ -239,6 +292,7 @@ public class PlayerEntryManager : MonoBehaviour
             group.localOffsets[i] = stage.position - group.startCenter;
             group.startRotations[i] = stage.rotation;
             group.startScales[i] = stage.localScale;
+            SetStageMaterial(entries[entryIndices[i]], group.targetMaterial);
         }
 
         return group;
@@ -280,8 +334,59 @@ public class PlayerEntryManager : MonoBehaviour
                 group.startScales[i],
                 stageScales[stage],
                 t);
+            SetStageColor(entry, Color.LerpUnclamped(pendingStageColor, group.targetColor, t));
             MovePlayerToStage(entry.player, stage);
         }
+    }
+
+    void SetStageColor(Entry entry, Color color)
+    {
+        if (entry.stageMaterials == null) return;
+
+        foreach (var material in entry.stageMaterials)
+        {
+            if (material != null) material.color = color;
+        }
+    }
+
+    void InitializeStageMaterials(Entry entry)
+    {
+        entry.stageMaterials = new Material[entry.stageRenderers.Length];
+        for (var i = 0; i < entry.stageRenderers.Length; i++)
+        {
+            var renderer = entry.stageRenderers[i];
+            if (renderer != null) entry.stageMaterials[i] = renderer.material;
+        }
+    }
+
+    void SetStageMaterial(Entry entry, Material materialTemplate)
+    {
+        if (materialTemplate == null || entry.stageRenderers == null) return;
+
+        ReleaseStageMaterials(entry);
+        entry.stageMaterials = new Material[entry.stageRenderers.Length];
+        for (var i = 0; i < entry.stageRenderers.Length; i++)
+        {
+            var renderer = entry.stageRenderers[i];
+            if (renderer == null) continue;
+
+            renderer.sharedMaterial = materialTemplate;
+            var material = renderer.material;
+            material.color = pendingStageColor;
+            entry.stageMaterials[i] = material;
+        }
+    }
+
+    void ReleaseStageMaterials(Entry entry)
+    {
+        if (entry.stageMaterials == null) return;
+
+        foreach (var material in entry.stageMaterials)
+        {
+            if (material != null) Destroy(material);
+        }
+
+        entry.stageMaterials = null;
     }
 
     void StartLayoutAnimation(List<LayoutPose> targets)
@@ -349,11 +454,48 @@ public class PlayerEntryManager : MonoBehaviour
         var playerCollider = player.GetComponent<Collider>();
         if (stageCollider != null)
         {
-            var playerHalfHeight = playerCollider != null ? playerCollider.bounds.extents.y : 0.5f;
-            position.y = stageCollider.bounds.max.y + playerHalfHeight + SpawnClearance;
+            var stageTop = GetStageTop(stageCollider);
+            var playerBottomOffset = GetPlayerBottomOffset(player, playerCollider);
+            position.y = stageTop + playerBottomOffset + SpawnClearance;
         }
 
+        if (!IsFinite(position)) return;
         player.transform.SetPositionAndRotation(position, stage.rotation);
+    }
+
+    static float GetStageTop(Collider stageCollider)
+    {
+        if (stageCollider is BoxCollider box)
+        {
+            return box.transform.TransformPoint(
+                box.center + Vector3.up * box.size.y * 0.5f).y;
+        }
+
+        return stageCollider.bounds.max.y;
+    }
+
+    static float GetPlayerBottomOffset(PlayerInput player, Collider playerCollider)
+    {
+        if (playerCollider is BoxCollider box)
+        {
+            var scaleY = Mathf.Abs(box.transform.lossyScale.y);
+            return Mathf.Max(0f, (box.size.y * 0.5f - box.center.y) * scaleY);
+        }
+
+        if (playerCollider != null)
+        {
+            var offset = player.transform.position.y - playerCollider.bounds.min.y;
+            if (!float.IsNaN(offset) && !float.IsInfinity(offset)) return Mathf.Max(0f, offset);
+        }
+
+        return 0.5f;
+    }
+
+    static bool IsFinite(Vector3 value)
+    {
+        return !float.IsNaN(value.x) && !float.IsInfinity(value.x)
+            && !float.IsNaN(value.y) && !float.IsInfinity(value.y)
+            && !float.IsNaN(value.z) && !float.IsInfinity(value.z);
     }
 
     static void SetPresentationFrozen(PlayerInput player, bool frozen)
