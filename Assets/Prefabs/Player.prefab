@@ -186,6 +186,8 @@ MonoBehaviour:
   v: 12
   rangeMultiplier: 2
   projectileSpeedMultiplier: 3
+  specialAttackCost: 3
+  specialAttackDamage: 30
   fireDelay: 0.5
   spawnOffset: 1
 --- !u!114 &-2135899147206752792

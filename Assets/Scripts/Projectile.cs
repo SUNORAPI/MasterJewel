@@ -35,12 +35,30 @@ public class Projectile : MonoBehaviour
         hp = other.GetComponent<PlayerHPManager>();
         if(hp == null) return;
         else if(hp.PlayerId == ownerId)return;
-        // 同じチームにはダメージを与えず、弾も消さずにそのまま貫通する。
-        else if(hp.Team == ownerTeam)return;
+        // 発射時のキャッシュ値だけに頼らず、現在の所属チームでも照合する。
+        // チーム確定前に生成されたPlayerAttackControllerが残っていても誤射しない。
+        else if(IsFriendly(hp))return;
         else
         {
             hp.TakeDamage(damage);
             Destroy(gameObject);
         }
+    }
+
+    bool IsFriendly(PlayerHPManager target)
+    {
+        if (target == null) return false;
+
+        int currentOwnerTeam = ownerTeam;
+        var manager = PlayerStatusManager.Instance;
+        if (manager != null && ownerId >= 0 && ownerId < manager.Count)
+        {
+            var ownerStatus = manager.GetStatus(ownerId);
+            if (ownerStatus != null) currentOwnerTeam = ownerStatus.teamNumber;
+        }
+
+        return currentOwnerTeam >= 0
+            && target.Team >= 0
+            && target.Team == currentOwnerTeam;
     }
 }

@@ -13,8 +13,10 @@ public class PlayerRegistrar : MonoBehaviour
 
     bool registered;
     GameObject avatarInstance;
+    Vector3 facingDirection = Vector3.forward;
 
     public int PlayerId => playerId;
+    public Vector3 FacingDirection => facingDirection;
 
     public void SetPlayerId(int id)
     {
@@ -60,6 +62,7 @@ public class PlayerRegistrar : MonoBehaviour
             Quaternion.Euler(avatarLocalEulerAngles));
         avatarInstance.transform.localScale = avatarLocalScale;
         PrepareAvatarRendering();
+        ApplyFacingDirection();
     }
 
     // 大きく拡大したスキンメッシュが初期Boundsでカリングされるのを防ぐ。
@@ -87,6 +90,24 @@ public class PlayerRegistrar : MonoBehaviour
         worldLabel.Initialize(playerId);
     }
 
+    public void SetFacingDirection(Vector3 direction)
+    {
+        direction.y = 0f;
+        if (direction.sqrMagnitude <= 0.0001f) return;
+
+        facingDirection = direction.normalized;
+        ApplyFacingDirection();
+    }
+
+    void ApplyFacingDirection()
+    {
+        if (avatarInstance == null) return;
+
+        // FBXごとの正面補正を保ったまま、見た目だけを入力方向へ向ける。
+        avatarInstance.transform.rotation = Quaternion.LookRotation(facingDirection, Vector3.up)
+            * Quaternion.Euler(avatarLocalEulerAngles);
+    }
+
     // GridSysへ自身を登録
     public void RegisterToGrid()
     {
@@ -99,6 +120,7 @@ public class PlayerRegistrar : MonoBehaviour
         var status = PlayerStatusManager.Instance.GetStatus(playerId);
         if (status == null) return;
         GridSys.Instance.Register(playerId, transform, status);
+        SetFacingDirection(status.teamNumber == 0 ? Vector3.right : Vector3.left);
         registered = true;
     }
 
