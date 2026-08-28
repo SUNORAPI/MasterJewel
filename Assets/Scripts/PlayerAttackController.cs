@@ -5,9 +5,11 @@ public class PlayerAttackController : MonoBehaviour
 {
     [SerializeField] GameObject projectilePrefab;   // 発射する弾のPrefab
 
-    [SerializeField] float r = 6f;  // 射程
+    [SerializeField] float r = 6f;  // GridSysがないシーンで使う予備射程
     [SerializeField] int a = 10;    // 威力
     [SerializeField] float v = 12f; // 速度
+    [SerializeField, Min(0f)] float rangeMultiplier = 2f;
+    [SerializeField, Min(0f)] float projectileSpeedMultiplier = 3f;
 
     [SerializeField] float fireDelay = 0.5f;    // 発射後の受付停止時間
     [SerializeField] float spawnOffset = 1f;    // 発射位置調整
@@ -18,6 +20,11 @@ public class PlayerAttackController : MonoBehaviour
 
     Vector3 lastDir = Vector3.forward;  // 向き
     float cooldown; // 0以下なら発射可
+
+    public float CloseRange => BaseRange * rangeMultiplier;
+    public float FarRange => CloseRange * 2f;
+
+    float BaseRange => GridSys.Instance != null ? GridSys.Instance.CellSize : r;
 
     void Start()
     {
@@ -44,11 +51,11 @@ public class PlayerAttackController : MonoBehaviour
 
         if (input.ButtonA)
         {
-            Fire(damage: a * 2, speed: v, range: r);    // 近: 射程r, 威力2a, 速度v
+            Fire(damage: a * 2, speed: v * projectileSpeedMultiplier, range: CloseRange); // 近: 射程2マス
         }
         else if (input.ButtonB)
         {
-            Fire(damage: a, speed: v * 1.5f, range: r * 2f);    // 遠: 射程2r, 威力a, 速度1.5v
+            Fire(damage: a, speed: v * 1.5f * projectileSpeedMultiplier, range: FarRange); // 遠: 射程4マス
         }
     }
 

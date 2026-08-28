@@ -4,10 +4,13 @@ using TMPro;
 
 public class PlayerCardUI : MonoBehaviour
 {
+    const float MaxJGaugePoints = 10f;
+
     TMP_Text numberText;
     TMP_Text pointsText;
     TMP_Text hpText;
     Image hpGaugeImage;
+    Image jGaugeImage;
     int playerId = -1;
 
     void Awake()
@@ -16,19 +19,24 @@ public class PlayerCardUI : MonoBehaviour
         pointsText = transform.Find("Points").GetComponent<TMP_Text>();
         hpText = transform.Find("HP").GetComponent<TMP_Text>();
         hpGaugeImage = transform.Find("HPGauge").GetComponent<Image>();
-        hpGaugeImage.type = Image.Type.Filled;
-        hpGaugeImage.fillMethod = Image.FillMethod.Vertical;
-        hpGaugeImage.fillOrigin = (int)Image.OriginVertical.Bottom;
+        jGaugeImage = transform.Find("JGauge").GetComponent<Image>();
+        ConfigureVerticalGauge(hpGaugeImage);
+        ConfigureVerticalGauge(jGaugeImage);
         hpGaugeImage.fillAmount = 1f;
-
-        gameObject.SetActive(false);
+        jGaugeImage.fillAmount = 0f;
     }
 
     public void SetPlayerId(int id)
     {
-        if (playerId == id) return;
+        bool shouldBeVisible = id >= 0;
+        if (playerId == id)
+        {
+            if (gameObject.activeSelf != shouldBeVisible) gameObject.SetActive(shouldBeVisible);
+            return;
+        }
+
         playerId = id;
-        gameObject.SetActive(id >= 0);
+        gameObject.SetActive(shouldBeVisible);
     }
 
     void Update()
@@ -45,5 +53,13 @@ public class PlayerCardUI : MonoBehaviour
         int hp = Mathf.Clamp(status.health, 0, 100);
         hpText.text = $"{hp}%";
         hpGaugeImage.fillAmount = hp / 100f;
+        jGaugeImage.fillAmount = Mathf.Clamp01(status.Crystals / MaxJGaugePoints);
+    }
+
+    static void ConfigureVerticalGauge(Image gaugeImage)
+    {
+        gaugeImage.type = Image.Type.Filled;
+        gaugeImage.fillMethod = Image.FillMethod.Vertical;
+        gaugeImage.fillOrigin = (int)Image.OriginVertical.Bottom;
     }
 }

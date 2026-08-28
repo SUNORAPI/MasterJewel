@@ -2,7 +2,8 @@ using UnityEngine;
 
 public class PlayerMoveControll : MonoBehaviour
 {
-    [SerializeField] private float MoveSpeed = 2f;
+    [SerializeField] private float MoveSpeed = 2f; // GridSysがないシーンで使う予備速度
+    [SerializeField, Min(0f)] private float gameplaySpeedMultiplier = 2f;
     private Rigidbody Rigidbody;
     private ControllerInput ControllerInput;
     void Start()
@@ -21,6 +22,8 @@ public class PlayerMoveControll : MonoBehaviour
             ? new Vector3(dpad.x, 0, dpad.y).normalized
             : Vector3.zero;
 
-        Rigidbody.linearVelocity = dir * MoveSpeed;
+        // 基準速度の2倍 = 2マス/秒
+        float moveSpeed = GridSys.Instance != null ? GridSys.Instance.CellSize : MoveSpeed;
+        Rigidbody.linearVelocity = dir * moveSpeed * gameplaySpeedMultiplier;
     }
 }

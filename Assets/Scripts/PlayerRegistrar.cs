@@ -20,12 +20,14 @@ public class PlayerRegistrar : MonoBehaviour
     {
         playerId = id;
         ApplyAvatar();
+        EnsureWorldLabel();
     }
 
     void Start()
     {
         // シーン上でplayerIdを直接指定した場合にもアバターを反映する。
         if (avatarInstance == null) ApplyAvatar();
+        EnsureWorldLabel();
 
         // ゲームシーンへ移ったらGridSys.StartからRegisterToGridが呼ばれる。
         if (GridSys.Instance != null) RegisterToGrid();
@@ -76,6 +78,13 @@ public class PlayerRegistrar : MonoBehaviour
         {
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         }
+    }
+
+    void EnsureWorldLabel()
+    {
+        var worldLabel = GetComponent<PlayerWorldLabel>();
+        if (worldLabel == null) worldLabel = gameObject.AddComponent<PlayerWorldLabel>();
+        worldLabel.Initialize(playerId);
     }
 
     // GridSysへ自身を登録

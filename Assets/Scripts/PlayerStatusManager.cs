@@ -60,6 +60,34 @@ public class PlayerStatusManager : MonoBehaviour
         TeamsConfirmed = true;
     }
 
+    // チーム内での固定スロットをplayerId順で返す。
+    // リスポーンのたびに順番が変わらないため、同時に複数人が倒れても位置が重ならない。
+    public bool TryGetTeamSlot(
+        int playerId,
+        out int teamNumber,
+        out int slotIndex,
+        out int teamSize)
+    {
+        teamNumber = -1;
+        slotIndex = -1;
+        teamSize = 0;
+
+        if (playerId < 0 || playerId >= playerStatuses.Count) return false;
+
+        teamNumber = playerStatuses[playerId].teamNumber;
+        if (teamNumber < 0) return false;
+
+        for (var id = 0; id < playerStatuses.Count; id++)
+        {
+            if (playerStatuses[id].teamNumber != teamNumber) continue;
+
+            if (id == playerId) slotIndex = teamSize;
+            teamSize++;
+        }
+
+        return slotIndex >= 0 && teamSize > 0;
+    }
+
     // playerIdに対応するステータスを返す関数
     public PlayerStatus GetStatus(int id)
     {

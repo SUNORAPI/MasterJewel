@@ -167,6 +167,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMoveControll
   MoveSpeed: 2
+  gameplaySpeedMultiplier: 2
 --- !u!114 &41443271945625997
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183,6 +184,8 @@ MonoBehaviour:
   r: 6
   a: 10
   v: 12
+  rangeMultiplier: 2
+  projectileSpeedMultiplier: 3
   fireDelay: 0.5
   spawnOffset: 1
 --- !u!114 &-2135899147206752792
