@@ -34,6 +34,20 @@ public class ControllerInput : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (SceneTransitionController.IsTransitioning)
+        {
+            ButtonA = false;
+            ButtonB = false;
+            ButtonX = false;
+            ButtonY = false;
+            ButtonL = false;
+            ButtonR = false;
+            Start = false;
+            Select = false;
+            Dpad = Vector2.zero;
+            return;
+        }
+
         ButtonA = buttonA.IsPressed();
         ButtonB = buttonB.IsPressed();
         ButtonX = buttonX.IsPressed();
