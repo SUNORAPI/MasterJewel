@@ -43,7 +43,7 @@ public class PlayerRegistrar : MonoBehaviour
             return;
         }
 
-        var avatarPrefab = avatarPrefabs[playerId];
+        var avatarPrefab = GetAvatarPrefab();
         if (avatarPrefab == null)
         {
             Debug.LogWarning($"PlayerRegistrar: アバター {playerId + 1} が未設定です", this);
@@ -61,14 +61,40 @@ public class PlayerRegistrar : MonoBehaviour
             avatarLocalPosition,
             Quaternion.Euler(avatarLocalEulerAngles));
         avatarInstance.transform.localScale = avatarLocalScale;
-        PrepareAvatarRendering();
+        PrepareAvatarRendering(avatarInstance);
         ApplyFacingDirection();
     }
 
-    // 大きく拡大したスキンメッシュが初期Boundsでカリングされるのを防ぐ。
-    void PrepareAvatarRendering()
+    GameObject GetAvatarPrefab()
     {
-        foreach (var renderer in avatarInstance.GetComponentsInChildren<Renderer>(true))
+        if (playerId < 0 || avatarPrefabs == null || playerId >= avatarPrefabs.Length)
+            return null;
+
+        return avatarPrefabs[playerId];
+    }
+
+    // リザルトなど、操作用Player本体を持ち込まない画面向けの表示専用アバターを生成する。
+    public GameObject CreateAvatarPreview(Transform parent = null)
+    {
+        var avatarPrefab = GetAvatarPrefab();
+        if (avatarPrefab == null) return null;
+
+        var preview = parent != null
+            ? Instantiate(avatarPrefab, parent, false)
+            : Instantiate(avatarPrefab);
+        preview.name = $"PlayerAvatarPreview_{playerId + 1}";
+        preview.transform.SetLocalPositionAndRotation(
+            Vector3.zero,
+            Quaternion.Euler(avatarLocalEulerAngles));
+        preview.transform.localScale = avatarLocalScale;
+        PrepareAvatarRendering(preview);
+        return preview;
+    }
+
+    // 大きく拡大したスキンメッシュが初期Boundsでカリングされるのを防ぐ。
+    static void PrepareAvatarRendering(GameObject avatar)
+    {
+        foreach (var renderer in avatar.GetComponentsInChildren<Renderer>(true))
         {
             renderer.enabled = true;
             if (renderer is SkinnedMeshRenderer skinnedRenderer)
@@ -77,7 +103,7 @@ public class PlayerRegistrar : MonoBehaviour
             }
         }
 
-        foreach (var animator in avatarInstance.GetComponentsInChildren<Animator>(true))
+        foreach (var animator in avatar.GetComponentsInChildren<Animator>(true))
         {
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         }

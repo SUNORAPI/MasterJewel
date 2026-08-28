@@ -2,7 +2,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
-using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(TextMeshProUGUI))]
 public sealed class TitleScreenController : MonoBehaviour
@@ -33,11 +32,15 @@ public sealed class TitleScreenController : MonoBehaviour
     {
         UpdateBlink();
 
-        if (isTransitioning || !WasStartPressed()) return;
+        if (isTransitioning
+            || SceneTransitionController.IsTransitioning
+            || !WasStartPressed()) return;
 
-        isTransitioning = true;
-        SetPromptVisible(true);
-        SceneManager.LoadScene(entrySceneName);
+        if (SceneTransitionController.LoadScene(entrySceneName))
+        {
+            isTransitioning = true;
+            SetPromptVisible(true);
+        }
     }
 
     void UpdateBlink()

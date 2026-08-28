@@ -11,6 +11,7 @@ public class FieldObjectSpawner : MonoBehaviour
     [SerializeField] GameObject[] rockPrefabs;
     [SerializeField] GameObject redCrystalPrefab;
     [SerializeField] Material redCrystalMaterial;
+    [SerializeField] Color droppedCrystalColor = new Color(0.15f, 1f, 0.25f, 1f);
 
     [Header("Layout")]
     [SerializeField, Min(0)] int mirroredPairCount = 14;
@@ -27,6 +28,7 @@ public class FieldObjectSpawner : MonoBehaviour
 
     readonly List<GameObject> fieldPrefabs = new List<GameObject>();
     GridSys grid;
+    Material droppedCrystalRuntimeMaterial;
 
     void Awake()
     {
@@ -43,6 +45,7 @@ public class FieldObjectSpawner : MonoBehaviour
     void OnDestroy()
     {
         if (Instance == this) Instance = null;
+        if (droppedCrystalRuntimeMaterial != null) Destroy(droppedCrystalRuntimeMaterial);
     }
 
     void BuildPrefabList()
@@ -180,7 +183,7 @@ public class FieldObjectSpawner : MonoBehaviour
 
         instance.name = $"Dropped Crystal ({points}P)";
         RemoveImportedCamerasAndLights(instance);
-        ApplyRedCrystalMaterial(instance);
+        ApplyDroppedCrystalMaterial(instance);
 
         if (!TryGetRendererBounds(instance, out var bounds))
         {
@@ -240,12 +243,43 @@ public class FieldObjectSpawner : MonoBehaviour
 
     void ApplyRedCrystalMaterial(GameObject instance)
     {
-        if (redCrystalMaterial == null) return;
+        ApplyCrystalMaterial(instance, redCrystalMaterial);
+    }
+
+    void ApplyDroppedCrystalMaterial(GameObject instance)
+    {
+        if (droppedCrystalRuntimeMaterial == null && redCrystalMaterial != null)
+        {
+            droppedCrystalRuntimeMaterial = new Material(redCrystalMaterial)
+            {
+                name = "Dropped Crystal Green (Runtime)"
+            };
+            SetMaterialColor(droppedCrystalRuntimeMaterial, droppedCrystalColor);
+            if (droppedCrystalRuntimeMaterial.HasProperty("_EmissionColor"))
+            {
+                droppedCrystalRuntimeMaterial.EnableKeyword("_EMISSION");
+                droppedCrystalRuntimeMaterial.SetColor("_EmissionColor", droppedCrystalColor * 3f);
+            }
+        }
+
+        ApplyCrystalMaterial(instance, droppedCrystalRuntimeMaterial);
+    }
+
+    static void SetMaterialColor(Material material, Color color)
+    {
+        if (material == null) return;
+        if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
+        if (material.HasProperty("_Color")) material.SetColor("_Color", color);
+    }
+
+    static void ApplyCrystalMaterial(GameObject instance, Material material)
+    {
+        if (material == null) return;
 
         foreach (var renderer in instance.GetComponentsInChildren<Renderer>(true))
         {
             var materials = renderer.sharedMaterials;
-            for (int i = 0; i < materials.Length; i++) materials[i] = redCrystalMaterial;
+            for (int i = 0; i < materials.Length; i++) materials[i] = material;
             renderer.sharedMaterials = materials;
         }
     }

@@ -199,6 +199,32 @@ public class GridSys : MonoBehaviour
             minZ + (Mathf.Clamp(cellY, 0, height - 1) + 0.5f) * cellSize);
     }
 
+    // オブジェクト全体が盤面内に収まるよう、XZ座標を境界内へ制限する。
+    public Vector3 ClampToField(Vector3 position, Vector2 horizontalHalfExtents)
+    {
+        GetFieldBounds(out var minX, out var maxX, out var minZ, out var maxZ, out _);
+
+        float extentX = Mathf.Max(0f, horizontalHalfExtents.x);
+        float extentZ = Mathf.Max(0f, horizontalHalfExtents.y);
+        float centerX = (minX + maxX) * 0.5f;
+        float centerZ = (minZ + maxZ) * 0.5f;
+        float allowedMinX = Mathf.Min(minX + extentX, centerX);
+        float allowedMaxX = Mathf.Max(maxX - extentX, centerX);
+        float allowedMinZ = Mathf.Min(minZ + extentZ, centerZ);
+        float allowedMaxZ = Mathf.Max(maxZ - extentZ, centerZ);
+
+        position.x = Mathf.Clamp(position.x, allowedMinX, allowedMaxX);
+        position.z = Mathf.Clamp(position.z, allowedMinZ, allowedMaxZ);
+        return position;
+    }
+
+    public bool IsInsideField(Vector3 position, Vector2 horizontalHalfExtents)
+    {
+        Vector3 clamped = ClampToField(position, horizontalHalfExtents);
+        return Mathf.Abs(clamped.x - position.x) <= 0.001f
+            && Mathf.Abs(clamped.z - position.z) <= 0.001f;
+    }
+
     void GetFieldBounds(
         out float minX,
         out float maxX,

@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
 public class Tester : MonoBehaviour
 {
     [SerializeField] PlayerEntryManager entryManager;
 
     PlayerInputManager inputManager;
+    bool isTransitioning;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
     int simulatedDeviceCount;
 #endif
@@ -42,6 +42,7 @@ public class Tester : MonoBehaviour
             || Input.GetKeyDown(KeyCode.Return)
             || Input.GetKeyDown(KeyCode.KeypadEnter);
         if (!confirmPressed) return;
+        if (isTransitioning || SceneTransitionController.IsTransitioning) return;
         if (entryManager != null && entryManager.IsAnimating) return;
 
         // 1回目でチーム確定、2回目でゲーム開始。
@@ -51,8 +52,12 @@ public class Tester : MonoBehaviour
             return;
         }
 
-        if (entryManager != null) entryManager.PreparePlayersForGame();
-        SceneManager.LoadScene("MainGame");
+        isTransitioning = SceneTransitionController.LoadScene(
+            "MainGame",
+            () =>
+            {
+                if (entryManager != null) entryManager.PreparePlayersForGame();
+            });
     }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD

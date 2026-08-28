@@ -3,6 +3,8 @@ using UnityEngine;
 // 複数ポイントを1つにまとめて保持する取得用宝石。
 public class DroppedCrystal : MonoBehaviour
 {
+    [SerializeField] float spinSpeedDegreesPerSecond = 120f;
+
     public int Points { get; private set; }
 
     bool collected;
@@ -10,6 +12,14 @@ public class DroppedCrystal : MonoBehaviour
     public void Initialize(int points)
     {
         Points = Mathf.Max(0, points);
+    }
+
+    void Update()
+    {
+        transform.Rotate(
+            Vector3.up,
+            spinSpeedDegreesPerSecond * Time.deltaTime,
+            Space.World);
     }
 
     void OnTriggerEnter(Collider other)

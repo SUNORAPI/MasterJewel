@@ -19,6 +19,7 @@ public class PlayerStatusManager : MonoBehaviour
 
     public int Count => playerStatuses.Count;
     public bool TeamsConfirmed { get; private set; }
+    public int ForcedWinningTeam { get; private set; } = -1;
 
     // AwakeでInstanceを設定
     void Awake()
@@ -58,6 +59,14 @@ public class PlayerStatusManager : MonoBehaviour
         }
 
         TeamsConfirmed = true;
+    }
+
+    // リザルト画面確認用。通常の勝敗判定では-1のまま使用する。
+    public void ForceWinningTeamForResult(int teamNumber)
+    {
+        ForcedWinningTeam = teamNumber == 0 || teamNumber == 1
+            ? teamNumber
+            : -1;
     }
 
     // チーム内での固定スロットをplayerId順で返す。
