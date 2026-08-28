@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -7,9 +6,9 @@ public class Tester : MonoBehaviour
 {
     [SerializeField] PlayerEntryManager entryManager;
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-    readonly List<InputDevice> simulatedDevices = new List<InputDevice>();
     PlayerInputManager inputManager;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    int simulatedDeviceCount;
 #endif
 
     void Awake()
@@ -17,10 +16,13 @@ public class Tester : MonoBehaviour
         if (entryManager == null)
             entryManager = FindAnyObjectByType<PlayerEntryManager>();
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (entryManager != null)
             inputManager = entryManager.GetComponent<PlayerInputManager>();
-#endif
+    }
+
+    void Start()
+    {
+        AddKeyboardPlayerOne();
     }
 
     void Update()
@@ -36,7 +38,10 @@ public class Tester : MonoBehaviour
         }
 #endif
 
-        if (!Input.GetKeyDown(KeyCode.Space)) return;
+        var confirmPressed = Input.GetKeyDown(KeyCode.Space)
+            || Input.GetKeyDown(KeyCode.Return)
+            || Input.GetKeyDown(KeyCode.KeypadEnter);
+        if (!confirmPressed) return;
         if (entryManager != null && entryManager.IsAnimating) return;
 
         // 1回目でチーム確定、2回目でゲーム開始。
@@ -64,31 +69,52 @@ public class Tester : MonoBehaviour
         if (entryManager == null || inputManager == null) return false;
         if (entryManager.TeamsConfirmed)
         {
-            Debug.LogWarning("Tester: チーム確定後は疑似プレイヤーを追加できません");
+            Debug.LogWarning("Tester: チーム確定後はBotを追加できません");
             return false;
         }
 
-        var device = InputSystem.AddDevice<Gamepad>($"Entry Test Gamepad {simulatedDevices.Count + 1}");
+        var device = InputSystem.AddDevice<Gamepad>($"Debug Bot Gamepad {simulatedDeviceCount + 1}");
         var player = inputManager.JoinPlayer(pairWithDevice: device);
         if (player == null)
         {
             InputSystem.RemoveDevice(device);
-            Debug.LogWarning("Tester: 疑似プレイヤーの参加に失敗しました");
+            Debug.LogWarning("Tester: Botの参加に失敗しました");
             return false;
         }
 
-        simulatedDevices.Add(device);
-        Debug.Log($"Tester: 疑似プレイヤーを追加しました ({PlayerInput.all.Count}/8)");
+        simulatedDeviceCount++;
+        var bot = player.GetComponent<DebugBotController>();
+        if (bot == null) bot = player.gameObject.AddComponent<DebugBotController>();
+        bot.Initialize(device);
+
+        Debug.Log($"Tester: Botを追加しました ({PlayerInput.all.Count}/8)");
         return true;
     }
-
-    void OnDestroy()
-    {
-        foreach (var device in simulatedDevices)
-        {
-            if (device != null && device.added)
-                InputSystem.RemoveDevice(device);
-        }
-    }
 #endif
+
+    void AddKeyboardPlayerOne()
+    {
+        if (entryManager == null || inputManager == null) return;
+        if (PlayerInput.all.Count > 0)
+        {
+            Debug.LogWarning("Tester: 1Pが既に参加しているためキーボード1Pを追加しません");
+            return;
+        }
+
+        var device = InputSystem.AddDevice<Gamepad>("Keyboard Player 1");
+        var player = inputManager.JoinPlayer(pairWithDevice: device);
+        if (player == null)
+        {
+            InputSystem.RemoveDevice(device);
+            Debug.LogError("Tester: キーボード1Pの参加に失敗しました");
+            return;
+        }
+
+        var controller = player.GetComponent<KeyboardVirtualGamepadController>();
+        if (controller == null)
+            controller = player.gameObject.AddComponent<KeyboardVirtualGamepadController>();
+        controller.Initialize(device);
+
+        Debug.Log("Tester: キーボード1Pを追加しました (WASD / YGHB)");
+    }
 }

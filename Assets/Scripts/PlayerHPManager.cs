@@ -6,7 +6,7 @@ using UnityEngine;
 public class PlayerHPManager : MonoBehaviour
 {
     [SerializeField] float respawnDelay = 2f;     // 撃破からリスポーンまでの待機秒数
-    [SerializeField] Transform respawnPoint;       // リスポーン位置（未設定なら原点）
+    [SerializeField] Transform respawnPoint;       // チーム位置を取得できない場合の予備リスポーン位置
 
     PlayerRegistrar registrar;
     PlayerStatus status;
@@ -15,6 +15,7 @@ public class PlayerHPManager : MonoBehaviour
     // Projectileから当たり判定に使う公開情報
     public int PlayerId => registrar != null ? registrar.PlayerId : -1;
     public int Team => status != null ? status.teamNumber : -1;
+    public bool IsDead => isDead;
 
     void Start()
     {
@@ -44,7 +45,19 @@ public class PlayerHPManager : MonoBehaviour
         isDead = true;
         Debug.Log($"Player {PlayerId} は倒れた");
 
-        // TODO: 所持宝石(status.Crystals)のドロップ処理は今回未実装
+        // 所持ポイント全量を、ポイント値を保持した1つの宝石として落とす。
+        int carriedPoints = status.Crystals;
+        if (carriedPoints > 0)
+        {
+            var spawner = FieldObjectSpawner.Instance;
+            var droppedCrystal = spawner != null
+                ? spawner.SpawnDroppedCrystal(transform.position, carriedPoints)
+                : null;
+
+            // 生成に失敗した場合はポイントを失わせない。
+            if (droppedCrystal != null) status.Crystals = 0;
+            else Debug.LogWarning($"Player {PlayerId} の所持宝石をドロップできなかった", this);
+        }
 
         // プレイヤーを一時的に無効化（操作・表示・当たり判定を止める）
         SetPlayerEnabled(false);
@@ -53,8 +66,21 @@ public class PlayerHPManager : MonoBehaviour
 
         // ステータスと位置を初期化して復帰
         status.health = 100;
-        Vector3 pos = respawnPoint != null ? respawnPoint.position : Vector3.zero;
-        transform.position = pos;
+        Vector3 pos;
+        var rotation = transform.rotation;
+        if (GridSys.Instance == null
+            || !GridSys.Instance.TryGetRespawnPose(PlayerId, transform, out pos, out rotation))
+        {
+            pos = respawnPoint != null ? respawnPoint.position : Vector3.zero;
+        }
+
+        var body = GetComponent<Rigidbody>();
+        if (body != null)
+        {
+            body.linearVelocity = Vector3.zero;
+            body.angularVelocity = Vector3.zero;
+        }
+        transform.SetPositionAndRotation(pos, rotation);
 
         SetPlayerEnabled(true);
         isDead = false;

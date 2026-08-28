@@ -22,14 +22,21 @@ public class Projectile : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        var fieldCrystal = other.GetComponentInParent<FieldCrystal>();
+        if (fieldCrystal != null)
+        {
+            // 宝石の外側へ少し戻した位置に生成し、フィールドオブジェクト内への埋没を防ぐ。
+            Vector3 dropPosition = transform.position - direction.normalized * 0.25f;
+            fieldCrystal.Hit(damage, dropPosition);
+            Destroy(gameObject);
+            return;
+        }
+
         hp = other.GetComponent<PlayerHPManager>();
         if(hp == null) return;
         else if(hp.PlayerId == ownerId)return;
-        else if(hp.Team == ownerTeam)
-        {
-            Destroy(gameObject); 
-            return;
-        }
+        // 同じチームにはダメージを与えず、弾も消さずにそのまま貫通する。
+        else if(hp.Team == ownerTeam)return;
         else
         {
             hp.TakeDamage(damage);

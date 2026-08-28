@@ -27,6 +27,13 @@ public class PlayerEntryManager : MonoBehaviour
     [SerializeField] Material leftTeamStageMaterial;
     [SerializeField] Material rightTeamStageMaterial;
 
+    [Header("Instructions")]
+    [SerializeField] GameObject[] playerEntryInstructions;
+    [SerializeField] GameObject[] gameStartInstructions;
+    [SerializeField] GameObject gameStartBlinkingInstruction;
+    [SerializeField, Min(0f)] float gameStartVisibleDuration = 0.9f;
+    [SerializeField, Min(0f)] float gameStartHiddenDuration = 0.3f;
+
     const float SpawnClearance = 0.05f;
 
     sealed class Entry
@@ -67,6 +74,7 @@ public class PlayerEntryManager : MonoBehaviour
 
     PlayerInputManager manager;
     Coroutine layoutCoroutine;
+    Coroutine gameStartBlinkCoroutine;
     // 正面補正はアバター側で行うため、待機中の親回転は加えない。
     Quaternion waitingRotation = Quaternion.identity;
 
@@ -76,6 +84,8 @@ public class PlayerEntryManager : MonoBehaviour
     void Awake()
     {
         manager = GetComponent<PlayerInputManager>();
+        SetInstructionState(false);
+
         if (stagePrefab == null)
         {
             Debug.LogError(
@@ -185,10 +195,53 @@ public class PlayerEntryManager : MonoBehaviour
         PlayerStatusManager.Instance.ConfirmTeamsByHalf();
         TeamsConfirmed = true;
         manager.DisableJoining();
+        SetInstructionState(true);
+        StartGameStartBlinking();
         StartConfirmedLayout();
 
         Debug.Log($"Teams confirmed: left={(entries.Count + 1) / 2}, right={entries.Count / 2}");
         return true;
+    }
+
+    void SetInstructionState(bool teamsConfirmed)
+    {
+        SetInstructionsActive(playerEntryInstructions, !teamsConfirmed);
+        SetInstructionsActive(gameStartInstructions, teamsConfirmed);
+    }
+
+    static void SetInstructionsActive(GameObject[] instructions, bool active)
+    {
+        if (instructions == null) return;
+
+        foreach (var instruction in instructions)
+        {
+            if (instruction != null) instruction.SetActive(active);
+        }
+    }
+
+    void StartGameStartBlinking()
+    {
+        if (gameStartBlinkingInstruction == null) return;
+
+        if (gameStartBlinkCoroutine != null)
+            StopCoroutine(gameStartBlinkCoroutine);
+
+        gameStartBlinkCoroutine = StartCoroutine(BlinkGameStartInstruction());
+    }
+
+    IEnumerator BlinkGameStartInstruction()
+    {
+        var visibleWait = new WaitForSecondsRealtime(gameStartVisibleDuration);
+        var hiddenWait = new WaitForSecondsRealtime(gameStartHiddenDuration);
+
+        while (true)
+        {
+            gameStartBlinkingInstruction.SetActive(true);
+            yield return visibleWait;
+
+            gameStartBlinkingInstruction.SetActive(false);
+            yield return hiddenWait;
+        }
     }
 
     public void PreparePlayersForGame()
