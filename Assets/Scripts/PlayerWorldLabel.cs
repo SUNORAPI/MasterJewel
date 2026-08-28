@@ -8,8 +8,8 @@ public sealed class PlayerWorldLabel : MonoBehaviour
     [SerializeField] Color blueTeamColor = new Color(0.15f, 0.55f, 1f, 1f);
     [SerializeField] Color redTeamColor = new Color(1f, 0.2f, 0.2f, 1f);
     [SerializeField] Color pendingColor = Color.white;
-    [SerializeField, Min(0f)] float heightOffsetInCells = 0.15f;
-    [SerializeField, Min(0.001f)] float worldScaleInCells = 0.04f;
+    [SerializeField, Min(0f)] float heightOffsetInCells = 0.1f;
+    [SerializeField, Min(0.001f)] float worldScaleInCells = 0.08f;
 
     Transform labelTransform;
     TextMeshPro label;
@@ -20,21 +20,25 @@ public sealed class PlayerWorldLabel : MonoBehaviour
     public void Initialize(int id)
     {
         playerId = id;
-        EnsureLabel();
+        if (!EnsureLabel()) return;
         label.text = playerId >= 0 ? $"P{playerId + 1}" : "P?";
         RefreshColor();
     }
 
     void LateUpdate()
     {
-        EnsureLabel();
+        if (!EnsureLabel()) return;
         RefreshColor();
+
+        // シーン切替中に子オブジェクトが破棄されても、このフレームの処理を継続しない。
+        var currentLabelTransform = labelTransform;
+        if (currentLabelTransform == null) return;
 
         if (activeCamera == null) activeCamera = Camera.main;
 
         float cellSize = GridSys.Instance != null ? GridSys.Instance.CellSize : 4f;
-        float top = GetPlayerTop();
-        labelTransform.position = new Vector3(
+        float top = GetPlayerTop(cellSize);
+        currentLabelTransform.position = new Vector3(
             transform.position.x,
             top + cellSize * heightOffsetInCells,
             transform.position.z);
@@ -44,26 +48,31 @@ public sealed class PlayerWorldLabel : MonoBehaviour
             Mathf.Abs(transform.lossyScale.x),
             Mathf.Abs(transform.lossyScale.y),
             Mathf.Abs(transform.lossyScale.z));
-        labelTransform.localScale = Vector3.one
+        currentLabelTransform.localScale = Vector3.one
             * (cellSize * worldScaleInCells / Mathf.Max(parentScale, 0.0001f));
 
         if (activeCamera != null)
         {
-            labelTransform.rotation = Quaternion.LookRotation(
-                labelTransform.position - activeCamera.transform.position,
-                activeCamera.transform.up);
+            currentLabelTransform.rotation = activeCamera.transform.rotation;
         }
     }
 
-    void EnsureLabel()
+    bool EnsureLabel()
     {
-        if (label != null) return;
+        if (label != null && labelTransform != null) return true;
+
+        // Unityでは破棄済みObjectのC#参照が次フレームまで残ることがあるため、
+        // 片方でも失われていれば古い参照を捨ててラベル全体を作り直す。
+        label = null;
+        labelTransform = null;
+        if (!isActiveAndEnabled) return false;
 
         var labelObject = new GameObject("Player Number Label");
         labelTransform = labelObject.transform;
         labelTransform.SetParent(transform, false);
 
         label = labelObject.AddComponent<TextMeshPro>();
+        displayedTeam = int.MinValue;
         label.text = playerId >= 0 ? $"P{playerId + 1}" : "P?";
         label.alignment = TextAlignmentOptions.Center;
         label.fontSize = 6f;
@@ -73,7 +82,14 @@ public sealed class PlayerWorldLabel : MonoBehaviour
         label.outlineColor = Color.black;
 
         var meshRenderer = labelObject.GetComponent<MeshRenderer>();
-        if (meshRenderer != null) meshRenderer.sortingOrder = 100;
+        if (meshRenderer != null)
+        {
+            meshRenderer.sortingOrder = 1000;
+            meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            meshRenderer.receiveShadows = false;
+            meshRenderer.allowOcclusionWhenDynamic = false;
+        }
+        return label != null && labelTransform != null;
     }
 
     void RefreshColor()
@@ -97,7 +113,7 @@ public sealed class PlayerWorldLabel : MonoBehaviour
                 : pendingColor;
     }
 
-    float GetPlayerTop()
+    float GetPlayerTop(float cellSize)
     {
         float top = float.NegativeInfinity;
         foreach (var playerRenderer in GetComponentsInChildren<Renderer>())
@@ -112,9 +128,13 @@ public sealed class PlayerWorldLabel : MonoBehaviour
             top = Mathf.Max(top, playerRenderer.bounds.max.y);
         }
 
-        if (!float.IsNegativeInfinity(top)) return top;
-
         var playerCollider = GetComponent<Collider>();
-        return playerCollider != null ? playerCollider.bounds.max.y : transform.position.y;
+        float colliderTop = playerCollider != null
+            ? playerCollider.bounds.max.y
+            : transform.position.y;
+        if (float.IsNegativeInfinity(top)) return colliderTop;
+
+        // 異常に大きいSkinnedMeshのBoundsで画面外へ飛ばないよう、最大高さを制限する。
+        return Mathf.Clamp(top, colliderTop, transform.position.y + cellSize * 2f);
     }
 }
